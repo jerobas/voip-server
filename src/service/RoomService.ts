@@ -1,6 +1,6 @@
 interface Room {
   id: string;
-  players: Array<{ id: string; name: string }>;
+  players: Array<{ id: string; name: string; peerId: string }>;
 }
 
 class RoomService {
@@ -18,33 +18,35 @@ class RoomService {
     return RoomService.instance;
   }
 
-  public createRoom(roomId: string): Room {
-    if (!this.rooms.has(roomId)) {
-      this.rooms.set(roomId, { id: roomId, players: [] });
-    }
-    return this.rooms.get(roomId)!;
-  }
-
-  public addPlayerToRoom(roomId: string, playerId: string, playerName: string) {
+  public addPlayerToRoom(
+    roomId: string,
+    playerId: string,
+    playerName: string,
+    peerId: string
+  ) {
     const room = this.rooms.get(roomId);
     if (room) {
-      room.players.push({ id: playerId, name: playerName });
-      return room;
+      return room.players.push({ id: playerId, name: playerName, peerId });
+    } else {
+      return this.rooms.set(roomId, {
+        id: roomId,
+        players: [{ id: playerId, name: playerName, peerId }],
+      });
     }
-    return null;
   }
 
-  public removePlayerFromRoom(roomId: string, playerId: string): void {
-    const room = this.rooms.get(roomId);
-    if (room) {
+  public removePlayer(playerId: string): void {
+    this.rooms.forEach((room, roomId) => {
       room.players = room.players.filter((player) => player.id !== playerId);
       if (room.players.length === 0) {
         this.rooms.delete(roomId);
       }
-    }
+    });
   }
 
-  public getRoomPlayers(roomId: string): Array<{ id: string; name: string }> {
+  public getRoomPlayers(
+    roomId: string
+  ): Array<{ id: string; name: string; peerId: string }> {
     return this.rooms.get(roomId)?.players || [];
   }
 }

@@ -35,13 +35,17 @@ class RoomService {
     }
   }
 
-  public removePlayer(playerId: string): void {
-    this.rooms.forEach((room, roomId) => {
-      room.players = room.players.filter((player) => player.id !== playerId);
+  public removePlayer(roomID: string, playerName: string): void {
+    const room = this.rooms.get(roomID);
+    if (room) {
+      room.players = room.players.filter(
+        (player) => player.name !== playerName
+      );
+
       if (room.players.length === 0) {
-        this.rooms.delete(roomId);
+        this.rooms.delete(roomID);
       }
-    });
+    }
   }
 
   public getRoomPlayers(

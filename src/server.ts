@@ -17,7 +17,6 @@ app.use(express.json());
 app.use(cors());
 
 io.on("connection", (socket: Socket) => {
-  console.log(socket.id);
   socket.on(
     "joinRoom",
     ({
@@ -45,8 +44,16 @@ io.on("connection", (socket: Socket) => {
     }
   );
 
+  socket.on(
+    "leaveRoom",
+    ({ roomId, playerName }: { roomId: string; playerName: string }) => {
+      RoomService.removePlayer(roomId, playerName);
+      socket.leave(roomId);
+    }
+  );
+
   socket.on("disconnect", () => {
-    RoomService.removePlayer(socket.id);
+    // RoomService.removePlayer(socket.id);
   });
 });
 

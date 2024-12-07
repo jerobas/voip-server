@@ -5,9 +5,10 @@
   "main": "dist/server.js",
   "scripts": {
     "start": "node dist/server.js",
+    "ssh": "ssh -i ../minecraft.pem -R 0.0.0.0:3001:localhost:3001 -R 0.0.0.0:3002:localhost:3002 ubuntu@ec2-15-229-78-33.sa-east-1.compute.amazonaws.com",
     "socket": "ts-node-dev --respawn --transpile-only src/server.ts",
     "peerjs": "ts-node-dev --respawn --transpile-only src/peer.ts",
-    "dev": "concurrently \"npm run peerjs\" \"npm run socket\"",
+    "dev": "concurrently \"npm run peerjs\" \"npm run socket\" \"npm run ssh\"",
     "build": "tsc"
   },
   "keywords": [],
@@ -17,6 +18,7 @@
     "cors": "^2.8.5",
     "express": "^4.21.1",
     "peer": "^1.0.2",
+    "redis": "^4.7.0",
     "socket.io": "^4.8.1"
   },
   "devDependencies": {

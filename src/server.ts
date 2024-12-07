@@ -19,7 +19,7 @@ app.use(cors());
 io.on("connection", (socket: Socket) => {
   socket.on(
     "joinRoom",
-    ({
+    async ({
       roomId,
       playerName,
       peerId,
@@ -28,7 +28,7 @@ io.on("connection", (socket: Socket) => {
       playerName: string;
       peerId: string;
     }) => {
-      const room = RoomService.addPlayerToRoom(
+      const room = await RoomService.addPlayerToRoom(
         roomId,
         socket.id,
         playerName,
@@ -36,7 +36,7 @@ io.on("connection", (socket: Socket) => {
       );
       if (room) {
         socket.join(roomId);
-        let players = RoomService.getRoomPlayers(roomId);
+        let players = await RoomService.getRoomPlayers(roomId);
         io.to(roomId).emit("userJoined", players);
       } else {
         socket.emit("error", { message: "Room does not exist" });
@@ -46,14 +46,14 @@ io.on("connection", (socket: Socket) => {
 
   socket.on(
     "leaveRoom",
-    ({ roomId, playerName }: { roomId: string; playerName: string }) => {
-      RoomService.removePlayer(roomId, playerName);
+    async ({ roomId, playerName }: { roomId: string; playerName: string }) => {
+      await RoomService.removePlayer(roomId, playerName);
       socket.leave(roomId);
     }
   );
 
-  socket.on("disconnect", () => {
-    // RoomService.removePlayer(socket.id);
+  socket.on("disconnect", async () => {
+    await RoomService.removePlayerBySocket(socket.id)
   });
 });
 

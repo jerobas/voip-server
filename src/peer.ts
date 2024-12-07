@@ -10,7 +10,6 @@ app.use(express.json());
 const PORT = 3002;
 
 app.use("/peerjs", (req, res, next) => {
-  console.log(`Accessed PeerJS path: ${req.method} ${req.originalUrl}`);
   next();
 });
 

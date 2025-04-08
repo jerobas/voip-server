@@ -23,16 +23,19 @@ io.on("connection", (socket: Socket) => {
       roomId,
       playerName,
       peerId,
+      summonerId,
     }: {
       roomId: string;
       playerName: string;
       peerId: string;
+      summonerId: string;
     }) => {
       const room = await RoomService.addPlayerToRoom(
         roomId,
         socket.id,
         playerName,
-        peerId
+        peerId,
+        summonerId
       );
       if (room) {
         socket.join(roomId);
@@ -53,7 +56,9 @@ io.on("connection", (socket: Socket) => {
   );
 
   socket.on("disconnect", async () => {
-    await RoomService.removePlayerBySocket(socket.id)
+    const [disconnectedPlayer, roomId] = await RoomService.removePlayerBySocket(socket.id)
+    if (!disconnectedPlayer || !roomId) return;
+    io.to(roomId).emit("playerDisconnected", disconnectedPlayer);
   });
 });
 

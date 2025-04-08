@@ -1,14 +1,13 @@
-import { createClient } from "redis";
-import { Room, Player} from '../interfaces/index'
+import { Room, Player } from '../interfaces/index'
 
 class RoomService {
-  private redisClient;
   private static instance: RoomService;
+  private rooms: Map<string, Room> = new Map();
 
   private constructor() {
-    this.redisClient = createClient({ url: "redis://localhost:6379" });
-    this.redisClient.on("error", (err) => console.log("Redis erro:", err));
-    this.redisClient.connect();
+    // setInterval(() => {
+    //   console.log(this.rooms)
+    // }, 1000);
   }
 
   public static getInstance(): RoomService {
@@ -18,79 +17,70 @@ class RoomService {
     return RoomService.instance;
   }
 
-  public async addPlayerToRoom(
+  public addPlayerToRoom(
     roomId: string,
     playerId: string,
     playerName: string,
-    peerId: string
+    peerId: string,
+    summonerId: string
   ) {
-    const room = await this.getRoom(roomId);
+    const room = this.getRoom(roomId);
     if (room) {
-      return room.players.push({ id: playerId, name: playerName, peerId });
+      const updatedRoom = room.players.push({ id: playerId, name: playerName, peerId, summonerId });
+      return updatedRoom;
     } else {
       const newRoom: Room = {
         id: roomId,
-        players: [{ id: playerId, name: playerName, peerId }],
+        players: [{ id: playerId, name: playerName, peerId, summonerId }],
       };
-      await this.saveRoom(roomId, newRoom);
+      this.rooms.set(`room:${roomId}`, newRoom);
       return newRoom;
     }
   }
 
-  public async removePlayer(roomId: string, playerName: string): Promise<void> {
-    const room = await this.getRoom(roomId);
+  public removePlayer(roomId: string, playerName: string): void {
+    const room = this.getRoom(roomId);
     if (room) {
       room.players = room.players.filter(
         (player) => player.name !== playerName
       );
 
       if (room.players.length === 0) {
-        await this.redisClient.del(`room:${roomId}`);
-      } else {
-        await this.saveRoom(roomId, room);
+        this.rooms.delete(`room:${roomId}`);
       }
     }
   }
 
-  public async removePlayerBySocket(socketId: string): Promise<void> {
-    const keys = await this.redisClient.keys("room:*");
+  public removePlayerBySocket(socketId: string): [string | null, string | null] {
+    let disconnectedPlayer, roomId;
 
-    for (const key of keys) {
-      const roomData = await this.redisClient.get(key);
-      const room = roomData ? JSON.parse(roomData) : null;
+    this.rooms.forEach((room: Room, key: string) => {
+      const playerIndex = room.players.findIndex(
+        (player: Player) => player.id === socketId
+      );
 
-      if (room) {
-        const playerIndex = room.players.findIndex(
-          (player: Player) => player.id === socketId
-        );
+      if (playerIndex !== -1) {
+        disconnectedPlayer = room.players[playerIndex].summonerId;
+        roomId = room.id;
+        room.players.splice(playerIndex, 1);
 
-        if (playerIndex !== -1) {
-          room.players.splice(playerIndex, 1);
-
-          if (room.players.length === 0) {
-            await this.redisClient.del(key);
-          } else {
-            await this.redisClient.set(key, JSON.stringify(room));
-          }
-
-          break;
+        if (room.players.length === 0) {
+          this.rooms.delete(`room:${room.id}`);
         }
       }
-    }
+    });
+
+    return [disconnectedPlayer || null, roomId || null];
   }
 
-  public async getRoomPlayers(roomId: string): Promise<Player[]> {
-    const room = await this.getRoom(roomId);
+  public getRoomPlayers(roomId: string): Player[] {
+    const room = this.getRoom(roomId);
     return room?.players || [];
   }
 
-  private async getRoom(roomId: string): Promise<Room | null> {
-    const roomData = await this.redisClient.get(`room:${roomId}`);
-    return roomData ? JSON.parse(roomData) : null;
-  }
-
-  private async saveRoom(roomId: string, room: Room): Promise<void> {
-    await this.redisClient.set(`room:${roomId}`, JSON.stringify(room));
+  private getRoom(roomId: string): Room | null {
+    const roomData = this.rooms.get(`room:${roomId}`);
+    return roomData || null;
   }
 }
 

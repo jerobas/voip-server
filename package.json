@@ -4,10 +4,9 @@
   "description": "Backend for VOIP app",
   "main": "dist/server.js",
   "scripts": {
-    "ssh": "ssh -i ../ssh.pem -R 0.0.0.0:3001:localhost:3001 -R 0.0.0.0:3002:localhost:3002 ubuntu@ec2-15-228-45-137.sa-east-1.compute.amazonaws.com",
     "socket": "ts-node-dev --respawn --transpile-only src/server.ts",
     "peerjs": "ts-node-dev --respawn --transpile-only src/peer.ts",
-    "dev": "concurrently \"npm run peerjs\" \"npm run socket\" \"npm run ssh\"",
+    "dev": "concurrently \"npm run peerjs\" \"npm run socket\"",
     "build": "tsc"
   },
   "keywords": [],

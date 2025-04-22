@@ -1,4 +1,4 @@
-import { Room, Player } from "../interfaces/index";
+import { Room, User } from "../../shared/main";
 
 class RoomService {
   private static instance: RoomService;
@@ -69,7 +69,7 @@ class RoomService {
     return [summonerId, roomId];
   }
 
-  public getRoomPlayers(roomId: string): Player[] {
+  public getRoomPlayers(roomId: string): User[] {
     const room = this.getRoom(roomId);
     return room?.players || [];
   }

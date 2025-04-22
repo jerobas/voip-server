@@ -1,14 +1,9 @@
-import { Room, Player } from '../interfaces/index'
+import { Room, Player } from "../interfaces/index";
 
 class RoomService {
   private static instance: RoomService;
   private rooms: Map<string, Room> = new Map();
-
-  private constructor() {
-    // setInterval(() => {
-    //   console.log(this.rooms)
-    // }, 1000);
-  }
+  private playerToRoomMap: Map<string, string> = new Map();
 
   public static getInstance(): RoomService {
     if (!RoomService.instance) {
@@ -24,18 +19,18 @@ class RoomService {
     peerId: string,
     summonerId: string
   ) {
-    const room = this.getRoom(roomId);
+    let room = this.getRoom(roomId);
+    const player = { id: playerId, name: playerName, peerId, summonerId };
+
     if (room) {
-      const updatedRoom = room.players.push({ id: playerId, name: playerName, peerId, summonerId });
-      return updatedRoom;
+      room.players.push(player);
     } else {
-      const newRoom: Room = {
-        id: roomId,
-        players: [{ id: playerId, name: playerName, peerId, summonerId }],
-      };
-      this.rooms.set(`room:${roomId}`, newRoom);
-      return newRoom;
+      room = { id: roomId, players: [player] };
+      this.rooms.set(`room:${roomId}`, room);
     }
+
+    this.playerToRoomMap.set(playerId, roomId);
+    return room;
   }
 
   public removePlayer(roomId: string, playerName: string): void {
@@ -51,26 +46,27 @@ class RoomService {
     }
   }
 
-  public removePlayerBySocket(socketId: string): [string | null, string | null] {
-    let disconnectedPlayer, roomId;
+  public removePlayerBySocket(
+    socketId: string
+  ): [string | null, string | null] {
+    const roomId = this.playerToRoomMap.get(socketId);
+    if (!roomId) return [null, null];
 
-    this.rooms.forEach((room: Room, key: string) => {
-      const playerIndex = room.players.findIndex(
-        (player: Player) => player.id === socketId
-      );
+    const room = this.getRoom(roomId);
+    if (!room) return [null, null];
 
-      if (playerIndex !== -1) {
-        disconnectedPlayer = room.players[playerIndex].summonerId;
-        roomId = room.id;
-        room.players.splice(playerIndex, 1);
+    const playerIndex = room.players.findIndex((p) => p.id === socketId);
+    if (playerIndex === -1) return [null, null];
 
-        if (room.players.length === 0) {
-          this.rooms.delete(`room:${room.id}`);
-        }
-      }
-    });
+    const summonerId = room.players[playerIndex].summonerId;
+    room.players.splice(playerIndex, 1);
+    this.playerToRoomMap.delete(socketId);
 
-    return [disconnectedPlayer || null, roomId || null];
+    if (room.players.length === 0) {
+      this.rooms.delete(`room:${roomId}`);
+    }
+
+    return [summonerId, roomId];
   }
 
   public getRoomPlayers(roomId: string): Player[] {

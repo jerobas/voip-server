@@ -1,4 +1,4 @@
-import { Room, User } from "../../shared/main";
+import { Room, User } from "../shared/main";
 
 class RoomService {
   private static instance: RoomService;

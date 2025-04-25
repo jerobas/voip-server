@@ -77,12 +77,10 @@ class SocketServer {
             let players = RoomService.getRoomPlayers(roomId);
             callback?.(players)
             socket.to(roomId).emit(SOCKET_CLIENT_EVENTS.USER_JOINED, {
-                roomId, player: {
-                    id: socket.id,
-                    peerId,
-                    summonerId,
-                    playerName,
-                }
+                id: socket.id,
+                peerId,
+                summonerId,
+                playerName,
             });
         } else {
             socket.emit("error", { message: "Room does not exist" });

@@ -80,7 +80,7 @@ class SocketServer {
                 id: socket.id,
                 peerId,
                 summonerId,
-                playerName,
+                name: playerName,
             });
         } else {
             socket.emit("error", { message: "Room does not exist" });

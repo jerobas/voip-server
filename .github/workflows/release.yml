@@ -41,21 +41,16 @@ jobs:
         shell: bash
         run: |
             ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.SSH_HOST }} 'bash -l' << EOF 
-                export NVM_DIR="$HOME/.nvm"
-                [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-                [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-                nvm use node
-                
                 cd /home/ubuntu/app
                 npm install
 
-                pm2 stop voip-peer || true
-                pm2 delete voip-peer || true
-                pm2 start npm --name "voip-peer" -- run peerjs
+                /home/ubuntu/.nvm/versions/node/v20.18.0/bin/pm2 stop voip-peer || true
+                /home/ubuntu/.nvm/versions/node/v20.18.0/bin/pm2 delete voip-peer || true
+                /home/ubuntu/.nvm/versions/node/v20.18.0/bin/pm2 start npm --name "voip-peer" -- run peerjs
 
-                pm2 stop voip-socket || true
-                pm2 delete voip-socket || true
-                pm2 start npm --name "voip-socket" -- run socket
+                /home/ubuntu/.nvm/versions/node/v20.18.0/bin/pm2 stop voip-socket || true
+                /home/ubuntu/.nvm/versions/node/v20.18.0/bin/pm2 delete voip-socket || true
+                /home/ubuntu/.nvm/versions/node/v20.18.0/bin/pm2 start npm --name "voip-socket" -- run socket
 
                 # executa docker compose
                 cd src/infra

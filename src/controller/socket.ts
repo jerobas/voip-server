@@ -48,6 +48,8 @@ class SocketServer {
           origin: "*",
           methods: ["GET", "POST"],
         },
+        pingInterval: 5000,
+        pingTimeout: 7000
       });
 
       this._instance.on("connection", this._onConnection.bind(this));

@@ -28,7 +28,7 @@ jobs:
           rsync -avz --delete \ 
           --rsync-path="mkdir -p /home/ubuntu/app && rsync" \
           -e "ssh -o StrictHostKeyChecking=no" \
-          . ubuntu@${{ secrets.SSH_HOST }}:/home/ubuntu/app/
+          voip-server/ ubuntu@${{ secrets.SSH_HOST }}:/home/ubuntu/app/
 
       - name: Run setup and deploy on EC2
         run: |

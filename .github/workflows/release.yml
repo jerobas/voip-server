@@ -29,12 +29,13 @@ jobs:
          
       - name: Copy to EC2
         run: |
-          pwd &&
-          ls &&
-          rsync -avz --delete \ 
-          --rsync-path="mkdir -p /home/ubuntu/app && rsync" \
-          -e "ssh -o StrictHostKeyChecking=no" \
-          ../ ubuntu@${{ secrets.SSH_HOST }}:/home/ubuntu/app/
+           pwd &&
+           ls &&
+           rsync -avz --delete \
+             --rsync-path="mkdir -p /home/ubuntu/app && rsync" \
+             -e "ssh -o StrictHostKeyChecking=no" \
+             . ubuntu@${{ secrets.SSH_HOST }}:/home/ubuntu/app/
+       
 
       - name: Run setup and deploy on EC2
         run: |

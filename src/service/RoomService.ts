@@ -1,4 +1,5 @@
 import { Room, User } from "../shared/main";
+import logger from "../utils/logger";
 
 class RoomService {
   private static instance: RoomService;
@@ -8,6 +9,7 @@ class RoomService {
   public static getInstance(): RoomService {
     if (!RoomService.instance) {
       RoomService.instance = new RoomService();
+      logger.info("RoomService initialized");
     }
     return RoomService.instance;
   }
@@ -19,59 +21,90 @@ class RoomService {
     peerId: string,
     summonerId: string
   ) {
-    let room = this.getRoom(roomId);
-    const player = { id: playerId, name: playerName, peerId, summonerId };
+    try {
+      let room = this.getRoom(roomId);
+      const player = { id: playerId, name: playerName, peerId, summonerId };
 
-    if (room) {
-      room.players.push(player);
-    } else {
-      room = { id: roomId, players: [player] };
-      this.rooms.set(`room:${roomId}`, room);
+      if (room) {
+        room.players.push(player);
+        logger.info("Player added to existing room", { roomId, playerName });
+      } else {
+        room = { id: roomId, players: [player] };
+        this.rooms.set(`room:${roomId}`, room);
+        logger.info("New room created with player", { roomId, playerName });
+      }
+
+      this.playerToRoomMap.set(playerId, roomId);
+      return room;
+    } catch (error) {
+      logger.error("Error adding player to room", { roomId, playerId, error });
+      return null;
     }
-
-    this.playerToRoomMap.set(playerId, roomId);
-    return room;
   }
 
   public removePlayer(roomId: string, playerName: string): void {
-    const room = this.getRoom(roomId);
-    if (room) {
-      room.players = room.players.filter(
-        (player) => player.name !== playerName
-      );
+    try {
+      const room = this.getRoom(roomId);
+      if (room) {
+        room.players = room.players.filter(
+          (player) => player.name !== playerName
+        );
 
-      if (room.players.length === 0) {
-        this.rooms.delete(`room:${roomId}`);
+        if (room.players.length === 0) {
+          this.rooms.delete(`room:${roomId}`);
+          logger.info("Room deleted after last player left", { roomId });
+        } else {
+          logger.info("Player removed from room", { roomId, playerName });
+        }
       }
+    } catch (error) {
+      logger.error("Error removing player from room", {
+        roomId,
+        playerName,
+        error,
+      });
     }
   }
 
   public removePlayerBySocket(
     socketId: string
   ): [string | null, string | null] {
-    const roomId = this.playerToRoomMap.get(socketId);
-    if (!roomId) return [null, null];
+    try {
+      const roomId = this.playerToRoomMap.get(socketId);
+      if (!roomId) return [null, null];
 
-    const room = this.getRoom(roomId);
-    if (!room) return [null, null];
+      const room = this.getRoom(roomId);
+      if (!room) return [null, null];
 
-    const playerIndex = room.players.findIndex((p) => p.id === socketId);
-    if (playerIndex === -1) return [null, null];
+      const playerIndex = room.players.findIndex((p) => p.id === socketId);
+      if (playerIndex === -1) return [null, null];
 
-    const summonerId = room.players[playerIndex].summonerId;
-    room.players.splice(playerIndex, 1);
-    this.playerToRoomMap.delete(socketId);
+      const summonerId = room.players[playerIndex].summonerId;
+      room.players.splice(playerIndex, 1);
+      this.playerToRoomMap.delete(socketId);
 
-    if (room.players.length === 0) {
-      this.rooms.delete(`room:${roomId}`);
+      if (room.players.length === 0) {
+        this.rooms.delete(`room:${roomId}`);
+        logger.info("Room deleted after socket disconnected", { roomId });
+      } else {
+        logger.info("Player removed by socket ID", { roomId, socketId });
+      }
+
+      return [summonerId, roomId];
+    } catch (error) {
+      logger.error("Error removing player by socket", { socketId, error });
+      return [null, null];
     }
-
-    return [summonerId, roomId];
   }
 
   public getRoomPlayers(roomId: string): User[] {
-    const room = this.getRoom(roomId);
-    return room?.players || [];
+    try {
+      const room = this.getRoom(roomId);
+      return room?.players || [];
+    } catch (error) {
+      logger.error("Error getting room players", { roomId, error });
+      return [];
+    }
   }
 
   private getRoom(roomId: string): Room | null {

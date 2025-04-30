@@ -7,7 +7,10 @@
     "socket": "ts-node-dev --respawn --transpile-only src/server.ts",
     "peerjs": "ts-node-dev --respawn --transpile-only src/peer.ts",
     "dev": "concurrently \"npm run peerjs\" \"npm run socket\"",
-    "build": "tsc"
+    "build": "tsc",
+    "start:peerjs": "node dist/peer.js",
+    "start:socket": "node dist/server.js",
+    "start": "concurrently \"npm run start:peerjs\" \"npm run start:socket\""
   },
   "keywords": [],
   "author": "",
@@ -16,7 +19,9 @@
     "cors": "^2.8.5",
     "express": "^4.21.1",
     "peer": "^1.0.2",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "winston": "^3.17.0",
+    "winston-loki": "^6.1.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.13",

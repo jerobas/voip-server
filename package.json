@@ -1,7 +1,8 @@
 {
   "name": "voip-backend",
   "version": "1.0.0",
-  "description": "Backend for VOIP app",
+  "author": "@flaviozno and @jaonolo",
+  "description": "O backend responsável por fazer o Queemo funcionar!",
   "main": "dist/server.js",
   "scripts": {
     "socket": "ts-node-dev --respawn --transpile-only src/server.ts",
@@ -12,8 +13,15 @@
     "start:socket": "node dist/server.js",
     "start": "concurrently \"npm run start:peerjs\" \"npm run start:socket\""
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "voip",
+    "league-of-legends",
+    "webrtc",
+    "peerjs",
+    "socket.io",
+    "nodejs",
+    "typescript"
+  ],
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",

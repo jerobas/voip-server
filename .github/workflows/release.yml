@@ -27,12 +27,12 @@ jobs:
         run: |
          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.SSH_HOST }} "rm -rf /home/ubuntu/*"
          
-      - name: Copy projeto to EC2
+      - name: Copy to EC2
         run: |
           rsync -avz --delete \ 
           --rsync-path="mkdir -p /home/ubuntu/app && rsync" \
           -e "ssh -o StrictHostKeyChecking=no" \
-          . ubuntu@${{ secrets.SSH_HOST }}:/home/ubuntu/app/
+          ../ ubuntu@${{ secrets.SSH_HOST }}:/home/ubuntu/app/
 
       - name: Run setup and deploy on EC2
         run: |

@@ -20,11 +20,6 @@ app.get("/status", (req: express.Request, res: express.Response) => {
     .json({ status: "Peer ok", timestamp: new Date().toISOString() });
 });
 
-app.use("*", (req, res) => {
-  logger.warn(`Rota desconhecida acessada no peer: ${req.originalUrl}`);
-  res.status(404).json({ error: "Rota não encontrada", path: req.originalUrl });
-});
-
 const peerServer = ExpressPeerServer(
   app.listen(PORT, () => {
     console.log(`PeerJS Server running on http://localhost:${PORT}`);
@@ -35,3 +30,8 @@ const peerServer = ExpressPeerServer(
 );
 
 app.use("/", peerServer);
+
+app.use("*", (req, res) => {
+  logger.warn(`Rota desconhecida acessada no peer: ${req.originalUrl}`);
+  res.status(404).json({ error: "Rota não encontrada", path: req.originalUrl });
+});

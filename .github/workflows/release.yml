@@ -1,0 +1,59 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  use-template:
+    uses: jerobas/.github/.github/workflows/update-readme.yml@main
+    secrets: inherit
+
+  deploy:
+    name: Deploy Node.js to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Copy projeto to EC2
+        run: |
+          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./ ec2-user@${{ secrets.EC2_HOST }}:/home/ec2-user/app/
+
+      - name: Run setup and deploy on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+            if ! command -v docker &> /dev/null; then
+              sudo apt update -y
+              sudo apt install -y docker.io
+              sudo systemctl start docker
+              sudo systemctl enable docker
+              sudo usermod -aG docker ec2-user
+              newgrp docker
+            fi
+
+            cd /home/ec2-user/app
+
+            npm install
+
+            if ! command -v pm2 &> /dev/null; then
+              npm install -g pm2
+            fi
+
+            pm2 delete voip-peer || true
+            pm2 delete voip-socket || true
+
+            pm2 start npm --name "voip-peer" -- run peerjs
+            pm2 start npm --name "voip-socket" -- run socket
+
+            if [ -z "$(docker ps -q -f name=infra)" ]; then
+              docker compose -f src/infra/docker-compose.yml up -d
+            fi
+          EOF

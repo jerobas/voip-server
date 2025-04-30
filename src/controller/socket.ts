@@ -34,11 +34,11 @@ class SocketServer {
     }) => this.io.to(roomId).emit(SOCKET_CLIENT_EVENTS.USER_JOINED, player),
     [SOCKET_CLIENT_EVENTS.USER_LEFT]: ({
       roomId,
-      player,
+      summonerId,
     }: {
       roomId: string;
-      player: string;
-    }) => this.io.to(roomId).emit(SOCKET_CLIENT_EVENTS.USER_LEFT, player),
+      summonerId: string;
+    }) => this.io.to(roomId).emit(SOCKET_CLIENT_EVENTS.USER_LEFT, summonerId),
   };
 
   static init(httpServer: HTTPServer): SocketIOServer {
@@ -155,11 +155,11 @@ class SocketServer {
       socket.id
     );
     if (!disconnectedPlayer || !roomId) return;
-    this.emit(SOCKET_CLIENT_EVENTS.USER_LEFT, { roomId, disconnectedPlayer });
+    this.emit(SOCKET_CLIENT_EVENTS.USER_LEFT, { roomId, summonerId: disconnectedPlayer });
 
     logger.info("User disconnected", {
       socketId: socket.id,
-      player: disconnectedPlayer,
+      summonerId: disconnectedPlayer,
       roomId,
     });
   }

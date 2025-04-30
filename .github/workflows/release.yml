@@ -25,11 +25,11 @@ jobs:
 
       - name: Copy projeto to EC2
         run: |
-          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./ ec2-user@${{ secrets.EC2_HOST }}:/home/ec2-user/app/
+          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./ ec2-user@${{ secrets.SSH_HOST }}:/home/ec2-user/app/
 
       - name: Run setup and deploy on EC2
         run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.SSH_HOST }} << 'EOF'
             if ! command -v docker &> /dev/null; then
               sudo apt update -y
               sudo apt install -y docker.io

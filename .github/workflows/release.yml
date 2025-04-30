@@ -29,8 +29,6 @@ jobs:
          
       - name: Copy to EC2
         run: |
-           pwd &&
-           ls &&
            rsync -avz --delete \
              --rsync-path="mkdir -p /home/ubuntu/app && rsync" \
              -e "ssh -o StrictHostKeyChecking=no" \
@@ -40,33 +38,9 @@ jobs:
       - name: Run setup and deploy on EC2
         shell: bash
         run: |
-            ssh -tt -o StrictHostKeyChecking=no ubuntu@${{ secrets.SSH_HOST }} 'bash -l' << EOF
-                # atualiza e instala docker
-                if ! command -v docker &> /dev/null; then
-                sudo apt update -y
-                sudo apt install -y docker.io
-                sudo systemctl start docker
-                sudo systemctl enable docker
-                sudo usermod -aG docker ubuntu
-                fi
-
-                # exporta PATH para garantir npm/pm2
-                export PATH="$HOME/.nvm/versions/node/v*/bin:$PATH"
-
+            ssh -tt -o StrictHostKeyChecking=no ubuntu@${{ secrets.SSH_HOST }} 'bash -l' << EOF 
                 cd /home/ubuntu/app
-
-                # instala dependências e PM2
-                if ! command -v npm &> /dev/null; then
-                curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-                sudo apt install -y nodejs
-                fi
-
                 npm install
-
-                if ! command -v pm2 &> /dev/null; then
-                sudo npm install -g pm2
-                fi
-
                 pm2 delete voip-peer || true
                 pm2 delete voip-socket || true
                 pm2 start npm --name "voip-peer" -- run peerjs

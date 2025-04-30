@@ -47,6 +47,8 @@ jobs:
                 pm2 start npm --name "voip-socket" -- run socket
 
                 # executa docker compose
-                docker compose -f src/infra/docker-compose.yml up -d
+                pwd
+                cd src/infra
+                docker-compose up -d
             EOF
 

@@ -29,19 +29,15 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.AWS_HOST }} "rm -rf /home/ubuntu/queemo-server"
 
-      - name: Use Node.js 22.9.0
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 22.9.0
+          node-version: 22
 
       - name: Install dependencies and run tests
         run: |
-          npm ci
+          npm intall
           npm run test
-
-      - name: Install and build locally
-        run: |
-          npm ci
           npm run build
 
       - name: Copy to EC2

@@ -48,12 +48,12 @@ jobs:
         run: |
           rsync -avz --delete \
             --include='src/infra/***' \
-            --exclude='src/***' \ 
+            --exclude='src/***' \
             --exclude node_modules \
             --exclude='tsconfig.json' \
             --exclude='jest.config.js' \
             -e "ssh -o StrictHostKeyChecking=no" \
-            ./ ubuntu@${{ secrets.AWS_HOST }}:/home/ubuntu/ queemo-server/
+            ./ ubuntu@${{ secrets.AWS_HOST }}:/home/ubuntu/queemo-server/
 
       - name: Link persistent .env
         run: |

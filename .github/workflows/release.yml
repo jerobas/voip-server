@@ -23,43 +23,51 @@ jobs:
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.7.0
         with:
-          ssh-private-key: ${{ secrets.SSH_KEY }}
-
-      - name: Install dependencies and run tests
-        run: |
-         npm ci
-         npm run test
+          ssh-private-key: ${{ secrets.AWS_KEY }}
 
       - name: Remove path
         run: |
-         ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.SSH_HOST }} "rm -rf /home/ubuntu/*"
-         
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.AWS_KEY }} "rm -rf /home/ubuntu/queemo-server"
+
+      - name: Use Node.js 22.9.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.9.0
+
+      - name: Install dependencies and run tests
+        run: |
+          npm ci
+          npm run test
+
+      - name: Install and build locally
+        run: |
+          npm ci
+          npm run build
+
       - name: Copy to EC2
         run: |
-           rsync -avz --delete \
-             --exclude node_modules \
-             --rsync-path="mkdir -p /home/ubuntu/app && rsync" \
-             -e "ssh -o StrictHostKeyChecking=no" \
-             . ubuntu@${{ secrets.SSH_HOST }}:/home/ubuntu/app/
-       
+          rsync -avz --delete \
+            --include='src/infra/***' \
+            --exclude='src/***' \ 
+            --exclude node_modules \
+            --exclude='tsconfig.json' \
+            --exclude='jest.config.js' \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            ./ ubuntu@${{ secrets.AWS_HOST }}:/home/ubuntu/ queemo-server/
+
+      - name: Link persistent .env
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.AWS_HOST }} "
+            ln -sf /home/ubuntu/envs/.env.queemo /home/ubuntu/queemo-server/.dev.env
+          "
 
       - name: Run setup and deploy on EC2
         shell: bash
         run: |
-            ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.SSH_HOST }} 'bash -l' << EOF 
-                cd /home/ubuntu/app
-                npm install
-
-                /home/ubuntu/.nvm/versions/node/v20.18.0/bin/pm2 stop voip-peer || true
-                /home/ubuntu/.nvm/versions/node/v20.18.0/bin/pm2 delete voip-peer || true
-                /home/ubuntu/.nvm/versions/node/v20.18.0/bin/pm2 start npm --name "voip-peer" -- run peerjs
-
-                /home/ubuntu/.nvm/versions/node/v20.18.0/bin/pm2 stop voip-socket || true
-                /home/ubuntu/.nvm/versions/node/v20.18.0/bin/pm2 delete voip-socket || true
-                /home/ubuntu/.nvm/versions/node/v20.18.0/bin/pm2 start npm --name "voip-socket" -- run socket
-
-                # executa docker compose
-                cd src/infra
-                docker-compose up -d
-            EOF
-
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.AWS_HOST }} 'bash -l' << EOF 
+              cd /home/ubuntu/queemo-server
+              source /home/ubuntu/.nvm/nvm.sh
+              nvm use 22.9.0
+              npm install
+              pm2 update
+          EOF

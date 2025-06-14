@@ -27,7 +27,7 @@ jobs:
 
       - name: Remove path
         run: |
-          ssh -o StrictHostKeyChecking=no -J ubuntu@${{ secrets.AWS_HOST }} -p 3035 ${{ secrets.MAC_USER }}@localhost 
+          ssh -o StrictHostKeyChecking=no -J ubuntu@${{ secrets.AWS_HOST }} -p 3035 ${{ secrets.MAC_USER }}@localhost \
           "rm -rf ${{ secrets.MAC_PATH }}queemo-server"
 
       - name: Use Node.js 22

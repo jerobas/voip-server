@@ -58,6 +58,9 @@ jobs:
            key: ${{ secrets.JEROBAS_KEY }}
            port: 2222
            script: |
-            cd /home/${{ secrets.JEROBAS_USER }}/repos/queemo-server 
-            npm i
-            pm2 delete queemo-server || true && pm2 start npm --name \"queemo-server\" -- run start
+                source ~/.nvm/nvm.sh || true
+                export PATH=$HOME/.nvm/versions/node/$(nvm version)/bin:$PATH
+                cd /home/${{ secrets.JEROBAS_USER }}/repos/queemo-server
+                npm install
+                ~/.npm-global/bin/pm2 delete queemo-server || true
+                ~/.npm-global/bin/pm2 start npm --name "queemo-server" -- run start

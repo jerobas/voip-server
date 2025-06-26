@@ -55,6 +55,6 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -p 2222 ${{ secrets.JEROBAS_USER }}@${{ secrets.JEROBAS_HOST }} 'bash -l' << EOF
               cd /home/${{ secrets.JEROBAS_USER }}/repos/queemo-server
-              npm i
-              pm2 delete queemo-server || true && pm2 start npm --name "queemo-server" -- run start
+              ${{ secrets.NPM_PATH }} i
+              ${{ secrets.PM2_PATH }} delete queemo-server || true && ${{ secrets.PM2_PATH }} start ${{ secrets.NPM_PATH }} --name "queemo-server" -- run start
           EOF

@@ -53,7 +53,7 @@ jobs:
       - name: Setup and Deploy
         shell: bash
         run: |
-          ssh -o StrictHostKeyChecking=no -p 2222 ${{ secrets.JEROBAS_USER }}@${{ secrets.JEROBAS_HOST }} 'bash -l' << EOF
+          ssh -o StrictHostKeyChecking=no -p 2222 ${{ secrets.JEROBAS_USER }}@${{ secrets.JEROBAS_HOST }} << EOF
               source /home/${{ secrets.JEROBAS_USER }}/.bashrc
               cd /home/${{ secrets.JEROBAS_USER }}/repos/queemo-server
               npm i

@@ -1,5 +1,9 @@
 import { Room, User } from "../shared/main";
-import logger from "../utils/logger";
+import LokiLogger from "logger";
+
+const logger = new LokiLogger({
+  jobName: "voip-backend-service",
+}).getLogger();
 
 class RoomService {
   private static instance: RoomService;

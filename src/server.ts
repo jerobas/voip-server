@@ -2,7 +2,11 @@ import express from "express";
 import http from "http";
 import cors from "cors";
 import SocketServer from "./controller/socket";
-import logger from "./utils/logger";
+import LokiLogger from "logger";
+
+const logger = new LokiLogger({
+  jobName: "voip-backend-server",
+}).getLogger();
 
 const app = express();
 const server = http.createServer(app);

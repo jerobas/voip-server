@@ -6,7 +6,12 @@ import {
   User,
 } from "../shared/main";
 import RoomService from "../service/RoomService";
-import logger from "../utils/logger";
+import LokiLogger from "logger";
+
+const logger = new LokiLogger({
+  jobName: "voip-backend-controller",
+}).getLogger();
+
 
 type Handler = (
   socket: Socket,

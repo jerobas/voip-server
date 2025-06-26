@@ -3,7 +3,11 @@ import { ExpressPeerServer } from "peer";
 
 const app = express();
 import cors from "cors";
-import logger from "./utils/logger";
+import LokiLogger from "logger";
+
+const logger = new LokiLogger({
+  jobName: "voip-backend-peer",
+}).getLogger();
 
 app.use(cors());
 app.use(express.json());

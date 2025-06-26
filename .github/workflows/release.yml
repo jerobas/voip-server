@@ -23,12 +23,12 @@ jobs:
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.7.0
         with:
-          ssh-private-key: ${{ secrets.AWS_KEY }}
+          ssh-private-key: ${{ secrets.JEROBAS_KEY }}
 
       - name: Remove path
         run: |
-          ssh -o StrictHostKeyChecking=no -J ubuntu@${{ secrets.AWS_HOST }} -p 3035 ${{ secrets.MAC_USER }}@localhost \
-          "rm -rf ${{ secrets.MAC_PATH }}queemo-server"
+          ssh -o StrictHostKeyChecking=no -J ${{secrets.JEROBAS_USER}}@${{ secrets.JEROBAS_HOST }} -p 2222 \
+          "rm -rf /home/${{ secrets.JEROBAS_USER }}/repos/queemo-server"
 
       - name: Use Node.js 22
         uses: actions/setup-node@v4
@@ -44,23 +44,21 @@ jobs:
       - name: Copy to EC2
         run: |
           rsync -avz --delete \
-            --include='src/infra/***' \
             --exclude='src/***' \
             --exclude node_modules \
             --exclude='tsconfig.json' \
             --exclude='jest.config.js' \
-            -e "ssh -o StrictHostKeyChecking=no -J ubuntu@${{ secrets.AWS_HOST }} -p 3035" \
-            ./ ${{ secrets.MAC_USER }}@localhost:${{secrets.MAC_PATH}}queemo-server/
+            -e "ssh -o StrictHostKeyChecking=no -J ${{secrets.JEROBAS_USER}}@${{ secrets.JEROBAS_HOST }} -p 2222" \
+            ./ /home/${{ secrets.JEROBAS_USER }}/repos/queemo-server
 
-      - name: Link persistent .env from AWS to Local Mac
-        run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.AWS_HOST }} "cat /home/ubuntu/envs/.env.queemo" | \
-          ssh -o StrictHostKeyChecking=no -p 3035 ${{ secrets.MAC_USER }}@localhost "cat > ${{ secrets.MAC_PATH }}queemo-server/.dev.env"
-
+      # - name: Link persistent .env from AWS to Local Mac
+      #   run: |
+      #     ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.AWS_HOST }} "cat /home/ubuntu/envs/.env.queemo" | \
+      #     ssh -o StrictHostKeyChecking=no -p 3035 ${{ secrets.MAC_USER }}@localhost "cat > ${{ secrets.MAC_PATH }}queemo-server/.dev.env"
 
       # - name: Run setup and deploy on EC2
       #   shell: bash
       #   run: |
-      #     ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.AWS_HOST }} 'bash -l' << EOF 
+      #     ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.AWS_HOST }} 'bash -l' << EOF
       #         cd ${{ secrets.MAC_PATH }}queemo-server
       #     EOF

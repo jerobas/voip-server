@@ -53,7 +53,7 @@ jobs:
       - name: Setup and Deploy
         shell: bash
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.JEROBAS_USER }}@${{ secrets.JEROBAS_HOST }} 'bash -l' << EOF
+          ssh -o StrictHostKeyChecking=no -p 2222 ${{ secrets.JEROBAS_USER }}@${{ secrets.JEROBAS_HOST }} 'bash -l' << EOF
               cd /home/${{ secrets.JEROBAS_USER }}/repos/queemo-server
               npm i
               pm2 delete queemo-server || true && pm2 start npm --name "queemo-server" -- run start

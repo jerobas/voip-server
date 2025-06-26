@@ -40,7 +40,7 @@ jobs:
           npm run test
           npm run build
 
-      - name: Copy to EC2
+      - name: Copy
         run: |
           rsync -avz --delete \
             --exclude='src/***' \
@@ -50,14 +50,11 @@ jobs:
             -e "ssh -o StrictHostKeyChecking=no -p 2222" \
             ./ ${{ secrets.JEROBAS_USER }}@${{ secrets.JEROBAS_HOST }}:/home/${{ secrets.JEROBAS_USER }}/repos/queemo-server
 
-      # - name: Link persistent .env from AWS to Local Mac
-      #   run: |
-      #     ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.AWS_HOST }} "cat /home/ubuntu/envs/.env.queemo" | \
-      #     ssh -o StrictHostKeyChecking=no -p 3035 ${{ secrets.MAC_USER }}@localhost "cat > ${{ secrets.MAC_PATH }}queemo-server/.dev.env"
-
-      # - name: Run setup and deploy on EC2
-      #   shell: bash
-      #   run: |
-      #     ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.AWS_HOST }} 'bash -l' << EOF
-      #         cd ${{ secrets.MAC_PATH }}queemo-server
-      #     EOF
+      - name: Setup and Deploy
+        shell: bash
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.JEROBAS_USER }}@${{ secrets.JEROBAS_HOST }} 'bash -l' << EOF
+              cd /home/${{ secrets.JEROBAS_USER }}/repos/queemo-server
+              npm i
+              pm2 delete queemo-server || true && pm2 start npm --name "queemo-server" -- run start
+          EOF

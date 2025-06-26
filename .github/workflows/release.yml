@@ -27,8 +27,7 @@ jobs:
 
       - name: Remove path
         run: |
-          ssh -o StrictHostKeyChecking=no -J ${{secrets.JEROBAS_USER}}@${{ secrets.JEROBAS_HOST }} -p 2222 \
-          "rm -rf /home/${{ secrets.JEROBAS_USER }}/repos/queemo-server"
+          ssh -o StrictHostKeyChecking=no -p 2222 ${{ secrets.JEROBAS_USER }}@${{ secrets.JEROBAS_HOST }} "rm -rf /home/${{ secrets.JEROBAS_USER }}/repos/queemo-server"
 
       - name: Use Node.js 22
         uses: actions/setup-node@v4
@@ -48,8 +47,8 @@ jobs:
             --exclude node_modules \
             --exclude='tsconfig.json' \
             --exclude='jest.config.js' \
-            -e "ssh -o StrictHostKeyChecking=no -J ${{secrets.JEROBAS_USER}}@${{ secrets.JEROBAS_HOST }} -p 2222" \
-            ./ /home/${{ secrets.JEROBAS_USER }}/repos/queemo-server
+             -e "ssh -o StrictHostKeyChecking=no" -p 2222\
+           ./ ${{ secrets.JEROBAS_USER }}@${{ secrets.JEROBAS_HOST }}:/home/${{ secrets.JEROBAS_USER }}/repos/queemo-server
 
       # - name: Link persistent .env from AWS to Local Mac
       #   run: |
